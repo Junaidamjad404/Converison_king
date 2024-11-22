@@ -46,7 +46,6 @@
         </script>
 
         @include('shopify-app::partials.token_handler')
-        @include('shopify-app::partials.flash_messages')
     @endif
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

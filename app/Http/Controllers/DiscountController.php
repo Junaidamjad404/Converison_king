@@ -10,18 +10,17 @@ use Illuminate\Support\Facades\Log;
 
 class DiscountController extends Controller
 {
-    // protected $shopifyService;
+    protected $shopifyService;
 
-    // protected $user;
+    protected $user;
 
-    // public function __construct(User $user)
-    // {
-    //     $this->user = $user;
-    // }
+    public function __construct(User $user)
+    {
+        $this->user = $user;
+    }
 
     public function checkCustomer(Request $request)
     {
-        return response()->json(['fslajldsj' => true]);
 
         $request->validate([
             'shopDomain' => 'required|string',

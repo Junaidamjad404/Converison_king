@@ -1,0 +1,26 @@
+
+
+name = "Conversion-king"
+client_id = "838e074fbf5dc10b75f771c5cec3053d"
+application_url = "https://converison-king.test/"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_products,write_orders,write_products,read_orders,write_locations,read_locations,write_inventory,read_inventory,write_publications,read_publications,write_discounts,read_discounts"
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = [
+  "https://converison-king.test//authenticate"
+]
+
+[webhooks]
+api_version = "2024-10"
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = false
+dev_store_url = ""

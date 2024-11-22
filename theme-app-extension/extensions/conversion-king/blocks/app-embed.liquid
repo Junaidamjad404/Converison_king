@@ -1,0 +1,122 @@
+
+<div id="discount-price-container" style="margin-top: 10px; ">
+  <p style="font-size: 15px;  font-weight: 400; display: inline;">
+    Or <span style="font-size: 15px; font-weight: bold;" id="discount-price"></span>
+     if you <span id="show-form-message" style="text-decoration: underline; cursor: pointer; ">sign up for our newsletter</span>.
+  </p>
+</div>
+
+<div 
+  id="discount-widget" 
+  style="display: none;   padding: 5px; "
+>
+  <input
+        type="email"
+        id="email"
+        placeholder="Enter your email"
+        style="width: 100%; padding: 10px; font-size: 14px; box-sizing: border-box;"
+    />
+    <button
+        id="send-discount" 
+        style="width: 100%; Zmargin-top: 10px; padding: 10px 20px; background-color: black; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
+    >
+        Send Discount
+    </button>
+</div>
+
+<script>
+    var shopdomain = Shopify.shop;
+    var originalPrice = {{ product.price | divided_by: 100 }};
+    var discountPercentage = 10;
+    var discountedPrice = originalPrice - (originalPrice * discountPercentage) / 100;
+
+    document.getElementById("discount-price").textContent = `$${discountedPrice.toFixed(2)}`;
+    
+    document.getElementById("show-form-message").addEventListener("click", function () {
+      document.getElementById("discount-widget").style.display = "block";
+    });
+    
+   document.getElementById("send-discount").addEventListener("click", function () {
+    var emailInput = document.getElementById("email").value;
+    var parentDiv = document.getElementById("discount-widget");
+    var appdomain = 'https://junaidamjad936.myshopify.com/apps/lapp/';
+
+    // Remove existing messages
+    var existingMessage = document.getElementById("message-div");
+    if (existingMessage) {
+        parentDiv.removeChild(existingMessage);
+    }
+
+    // Validate email input
+    if (!emailInput || !emailInput.includes("@")) {
+        // Show validation error
+        var errorDiv = document.createElement("div");
+        errorDiv.id = "message-div";
+        errorDiv.style.color = "red";
+        errorDiv.style.marginTop = "10px";
+        errorDiv.textContent = "Please enter a valid email address.";
+        parentDiv.appendChild(errorDiv);
+        return;
+    }
+
+    // Send AJAX request to the Laravel endpoint
+    fetch(appdomain + "check-customer", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            email: emailInput,
+            shopDomain: Shopify.shop, // Shop domain for your app
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Create a new message div
+        var messageDiv = document.createElement("div");
+        messageDiv.id = "message-div";
+        messageDiv.style.marginTop = "10px";
+
+        if (data.error) {
+            // Show error message in red (existing customer case)
+            messageDiv.style.color = "red";
+            messageDiv.textContent = data.error;
+        } else if (data.message) {
+            // Show success message in green with the coupon for new customers
+            messageDiv.style.color = "green";
+            messageDiv.innerHTML = `
+                ${data.message} 
+                <br>
+                Your coupon code is: <span style="font-weight: bold;">${data.discountCode}</span>
+            `;
+        }
+
+        // Append the message div to the parent div
+        parentDiv.appendChild(messageDiv);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+
+        // Handle errors with a generic message
+        var errorDiv = document.createElement("div");
+        errorDiv.id = "message-div";
+        errorDiv.style.color = "red";
+        errorDiv.style.marginTop = "10px";
+        errorDiv.textContent = "Something went wrong. Please try again.";
+        parentDiv.appendChild(errorDiv);
+    });
+});
+
+</script>
+
+{% schema %}
+{
+"name": "Conversion king",
+"target": "section",
+"enabled_on": {
+"templates": ["product"]
+},
+"settings": []
+}
+{% endschema %}
+

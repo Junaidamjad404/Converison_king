@@ -7,6 +7,8 @@ use App\Models\User;
 use Gnikyt\BasicShopifyAPI\BasicShopifyAPI;
 use Gnikyt\BasicShopifyAPI\Options;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\FirstOrderDiscountCodeMail;
 
 class ShopifyService
 {
@@ -16,10 +18,13 @@ class ShopifyService
 
     protected $shopId;
 
+    protected $shopName;
+
     public function __construct(User $shop)
     {
 
         $this->shopId = $shop->id;
+        $this->shopName=$shop->name;
 
         // Initialize Options with API version
         $options = new Options;
@@ -32,8 +37,8 @@ class ShopifyService
         // Initialize BasicShopifyAPI with the Options instance
         $this->api = new BasicShopifyAPI($options);
 
-        $this->api->setSession(new \Gnikyt\BasicShopifyAPI\Session($shop->name));
-        Log::info("Shopify API initialization complete for store: {$shop->name}");
+        $this->api->setSession(new \Gnikyt\BasicShopifyAPI\Session($this->shopName));
+        Log::info("Shopify API initialization complete for store: {$this->shopName}");
 
     }
 
@@ -90,7 +95,7 @@ class ShopifyService
             'email' => "email:$customerEmail",
         ];
         $response = $this->api->graph($query, $variables);
-
+        log::info('Response: '.json_encode($response));
         $customer = $response['body']->data->customers->edges;
         log::info('Customer Details: '.json_encode($customer));
         if (isset($customer) && count($customer) > 0) {
@@ -119,6 +124,7 @@ class ShopifyService
                 'shop_id' => $this->shopId,
                 'email' => $customerEmail,
             ]);
+            Mail::to($customerEmail)->send(new FirstOrderDiscountCodeMail($this->shopName,$discountCode));
 
             return response()->json(['message' => 'new customer has been created', 'discountCode' => $discountCode]);
         }
